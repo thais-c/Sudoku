@@ -1,0 +1,34 @@
+body {
+    background-color: red;
+    text-align: center;
+}
+
+.grid {
+    width: 500px;
+    height: 500px;
+    margin: 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.box {
+    display: flex;
+    width: 33.33%;
+    height: 33.33%;
+    flex-wrap: wrap;
+}
+
+.cel {
+    display: flex;
+    border: 1px solid gray;
+    width: 33.33%;
+    height: 33.33%;
+    align-items: center;
+    justify-content: center;
+}
+
+.cel:hover {
+    background-color: gray;
+    transition: all linear 0.3s;
+    cursor: pointer;
+}
