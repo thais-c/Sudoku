@@ -17,13 +17,14 @@ body {
 .cel:hover {
 .cel input {
     width: 100%;
-    border: 0;
+    border:0;
     text-align: center;
-    height: 100%;
-    border: 1px solid gray;
+    height:100%;
+    border:1px solid gray;
 }
 
 .cel input:hover {
     background-color: gray;
     transition: all linear 0.3s;
     cursor: pointer;
+}
