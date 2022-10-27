@@ -41,3 +41,11 @@ body {
     cursor: pointer;
 }
 
+.cel input.bg-success {
+    background-color: rgb(187, 227, 187) !important;
+}
+
+.cel input.bg-danger {
+    background-color: rgb(255, 128, 139) !important;
+}
+
