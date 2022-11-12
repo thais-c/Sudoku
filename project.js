@@ -1,3 +1,62 @@
+const FILTER_BOARDS = [
+  [
+    [0, 1, 0, 0, 0, 0, 0, 0, 1],
+    [0, 0, 0, 0, 0, 1, 0, 0, 0],
+    [0, 0, 0, 0, 1, 0, 1, 0, 0],
+    [1, 0, 0, 1, 0, 0, 0, 0, 1],
+    [0, 0, 0, 0, 1, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 1, 0, 0],
+    [0, 1, 0, 0, 0, 1, 0, 0, 0],
+    [0, 0, 0, 1, 0, 0, 0, 1, 0],
+    [1, 0, 0, 0, 1, 0, 0, 0, 0],
+  ],
+  [
+    [0, 0, 1, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 1, 0, 0, 1, 0],
+    [0, 0, 0, 0, 0, 1, 0, 0, 0],
+    [0, 1, 0, 0, 1, 0, 0, 0, 0],
+    [0, 0, 0, 0, 1, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 1, 0],
+    [1, 0, 0, 0, 0, 1, 0, 0, 1],
+    [0, 0, 0, 0, 1, 0, 0, 0, 0],
+    [0, 1, 0, 1, 0, 0, 0, 1, 0],
+  ],
+  [
+    [1, 0, 0, 1, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 1, 0, 0, 0, 1],
+    [0, 1, 0, 1, 0, 0, 0, 1, 0],
+    [0, 0, 0, 0, 0, 0, 1, 0, 0],
+    [0, 0, 0, 0, 1, 0, 0, 0, 1],
+    [0, 1, 0, 0, 0, 0, 0, 0, 1],
+    [0, 0, 1, 0, 1, 0, 1, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 1, 0, 0, 1, 0, 1, 0],
+  ],
+];
+
+// Show errors on page
+var totalErrors = 0;
+var filterId = getFilterRandomNumber();
+var solution = [];
+
+// List of html element boxes
+var grid = [];
+var gridElement = document.getElementById("grid");
+var calculatingElement = document.getElementById("calculating");
+var calculatingTryElement = document.getElementById("calculating-counter");
+var errorElement = document.getElementById("error");
+var boardSizeElement = document.getElementById("board-size");
+var gridBoxesCols = null;
+var gridBoxesRows = null;
+var boxCols = 3;
+var boxRows = 3;
+var calculatingTry = 0;
+
+function getFilterRandomNumber() {
+  // Get a random number between 0 and 2
+  return Math.floor(Math.random() * 2);
+}
+
 function getRandomArray() {
   // New empty array
   var numbers = []; 
@@ -29,21 +88,6 @@ function getRandomArray() {
   return numbers;
 }
 
-function getRandomNumber(randomNumbers, cel, box) {
-  if (box > 1) {
-    var currentBox = grid.find(gridBox => gridBox.id === box);
-    if (currentBox) {
-      if (cel < 4) {
-        var min = 0;
-        var max = 4;
-        var cels = currentBox.cels.filter(boxCel => boxCel.id > min && boxCel.id < max).map(boxCel => boxCel.value);
-      }
-    }
-    return randomNumbers[0];
-  }
-  return randomNumbers[0];
-}
-
 function addError() {
   // Increment the errors counter
   totalErrors++;
@@ -54,7 +98,7 @@ function addError() {
 function checkNumber(inputNumber, htmlElement) {
   // Get the data-value attribute from the html element
   var celNumber = htmlElement.getAttribute("data-value");
-  
+
   // If inputNumber is not empty or null
   if (!!inputNumber) {
     // Check if the two numbers are equal
@@ -77,21 +121,40 @@ function checkNumber(inputNumber, htmlElement) {
   }
 }
 
-function initCel(cel, box, randomNumber) {
-  // Creates the new cel object with cel id number, random value and the html input element
-  var celValue = {
-      id: cel,
-      value: randomNumber,
-      element: document.querySelector("#box-" + box + " .cel-" + cel + ' input')
-  };
-  // add data-value attribute to the html element to save the random value in the element
-  celValue.element.setAttribute("data-value", randomNumber);
+function createBoxElement() {
+  var box = document.createElement("div");
+  box.classList.add("box");
+  box.setAttribute("style", "width: " + (100 / gridBoxesCols) + "%; height: " + (100 / gridBoxesRows) + "%;");
+  return box;
+}
 
-  // Watch for input changes on each cel and call checkNumber, passing the input value and the html target element
-  celValue.element.addEventListener('input', function(event) {
+function createCelElement(box, cel, randomNumber) {
+  var celElement = document.createElement("div");
+  celElement.classList.add("cel");
+  celElement.append(createInputElement(box, cel, randomNumber));
+  return celElement;
+}
+
+function createInputElement(box, cel, randomNumber) {
+  var input = document.createElement("input");
+  input.setAttribute("type", "number");
+  input.setAttribute("data-value", randomNumber);
+  input.value = FILTER_BOARDS[filterId][box - 1][cel - 1] === 1 ? randomNumber : "";
+  input.addEventListener("input", function (event) {
     checkNumber(event.data, event.target);
   }, false);
+  return input;
+}
 
+function initCel(cel, box, randomNumber, gridElement) {
+  // Creates the new cel object with cel id number, random value and the html input element
+  var celValue = {
+    id: cel,
+    value: randomNumber,
+    element: createCelElement(box, cel, randomNumber),
+  };
+
+  gridElement.append(celValue.element)
   // return the new cel object to the caller
   return celValue;
 }
@@ -99,43 +162,156 @@ function initCel(cel, box, randomNumber) {
 function initBox(box) {
   // List of cels for each box
   var cels = [];
-  // List of random number to be used on each box
-  var randomNumbers = getRandomArray();
-
+  var boxElement = createBoxElement(box);
+  
   // Loop for each cel...
-  for (var cel = 1; cel < 10; cel++) { 
-    // Get random number from the list to the cel
-    var randomNumber = getRandomNumber(randomNumbers, cel, box);
-    // Remove the number from the random list
-    randomNumbers = randomNumbers.filter(random => random !== randomNumber);
-    // Add the cel to the box's cels list
-    var newCel = initCel(cel, box, randomNumber);
+  for (var cel = 1; cel < ((boxCols * boxRows) + 1); cel++) {
+    var boxRow = Math.floor((box - 1) / gridBoxesCols);
+    var boxCol = (box - 1) % gridBoxesCols;
+    var row = Math.floor((cel - 1) / boxCols) + (boxRow * boxRows);
+    var col = (cel - 1) % boxCols + (boxCol * boxCols); 
+    var value = solution[row][col];
+    var newCel = initCel(cel, box, value, boxElement);
     cels.push(newCel);
   }
 
+  gridElement.append(boxElement);
+
   return {
-      id: box,
-      cels: cels
+    id: box,
+    cels: cels,
   };
 }
 
-function initGrid() {
+function initBoard() {
   // Loop for each box...
-  for (var box = 1; box < 10; box++) {
+  for (var box = 1; box < ((gridBoxesCols * gridBoxesRows) + 1); box++) {
+    // box 1
     var newBox = initBox(box);
     // Add box to the grid list
     grid.push(newBox);
   }
 }
 
-// Show errors on page
-var totalErrors = 0;
+function getCurrentRowNumbers(rowNumber) {
+  return solution[rowNumber] || [];
+}
 
-// List of boxes
-var grid = [];
+function getCurrentColumnNumbers(columnNumber) {
+  var column = [];
+  for (var row = 0; row < solution.length; row++) {
+    var currentColumn = solution[row][columnNumber];
+    
+    if (currentColumn) {
+      column.push(currentColumn);
+    }
+  }
+  return column;
+}
 
-// Start the board
-initGrid();
+function filterBoxList(list, start) {
+  return [...list].filter((number, index) => index >= start && index < start + boxRows);
+}
 
-console.log(grid)
-console.log(getRandomArray());
+function getCurrentBoxNumbers(rowNumber, columnNumber) {
+  var rowOffset = Math.floor(rowNumber / boxRows);
+  var colOffset = Math.floor(columnNumber / boxCols); // offset from box to box in the grid
+  var boxNumber = (rowOffset * gridBoxesCols) + colOffset;
+  var columnOne = (boxNumber % gridBoxesCols) * boxCols;
+  var rowOne = Math.floor(boxNumber / gridBoxesCols) * boxCols;
+  var boxColumnNumbers = [];
+  var boxRowNumbers = [];
+
+  for (var i = 0; i < boxCols; i++) {
+    var currentCol = getCurrentColumnNumbers(columnOne + i);
+    boxColumnNumbers.push(...filterBoxList(currentCol, rowOne));
+  }
+
+  for (var i = 0; i < boxRows; i++) {
+    var currentRow = getCurrentRowNumbers(rowOne + i);
+    boxRowNumbers.push(...filterBoxList(currentRow, columnOne));
+  }
+  
+  return [...boxColumnNumbers, ...boxRowNumbers];
+}
+
+function populateGrid() {
+  solution = [];
+  var aTable = solution;
+  // loop for rows/lines
+  for (var row = 0; row < (gridBoxesRows * boxRows); row++) {
+    solution.push([]);
+    var rowList = solution[row];
+    // list of randomm numbers for the columns
+    var randomList = getRandomArray();
+
+    // loop for columns
+    for (var col = 0; col < (gridBoxesCols * boxCols); col++) {
+
+      // condition only for the ROW 0, the numbers are random
+      if (row === 0) {
+        var randomNumber = randomList.pop();
+        rowList.push(randomNumber);
+      } else {
+        // condition for all the ROWS FROM 1 TO 8
+        // get the number from the previous row
+        var currentRowNumbers = getCurrentRowNumbers(row);
+        // get the number from the previous column
+        var currentColumnNumbers = getCurrentColumnNumbers(col);
+        // get the number from the previous box
+        var currentBoxNumbers = getCurrentBoxNumbers(row, col);
+        var currentNumbers = [...currentRowNumbers, ...currentColumnNumbers, ...currentBoxNumbers];
+        var takenNumbers = new Set(currentNumbers);
+        var availableNumbers = randomList.filter(number => !takenNumbers.has(number));
+        var randomNumber = availableNumbers.pop();
+        randomList = randomList.filter(number => number !== randomNumber);
+        rowList.push(randomNumber);
+        console.log('test ', solution);
+      }
+    }
+  }
+}
+
+function validateGrid() {
+  for(var i = 0; i < (gridBoxesRows * boxRows); i++) {
+    var row = solution[i];
+    var rowSet = new Set(row);
+    if (rowSet.has(undefined)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function initGame(cols, rows) {
+   gridBoxesCols = cols;
+   gridBoxesRows = rows;
+   var isValid = false;
+   calculatingElement.removeAttribute("hidden");
+   boardSizeElement.setAttribute("hidden", true);
+
+   setTimeout(function () {
+
+    for(var i = 0; i < 1000; i++) {
+      calculatingTryElement.innerHTML = i;
+
+      populateGrid();
+      isValid = validateGrid();
+      
+      if(isValid) {
+        console.log('sucesso ', i, solution);
+        initBoard();
+        break;
+      }
+    }
+    if (!isValid) {
+        console.log('erro ', solution);
+        errorElement.removeAttribute("hidden");
+    }
+    calculatingElement.setAttribute("hidden", true);
+    }, 100);
+}
+
+function restart() {
+  window.location.reload();
+}

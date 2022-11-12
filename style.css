@@ -33,6 +33,7 @@ body {
     text-align: center;
     height: 100%;
     border: 1px solid gray;
+    background-color: white;
 }
 
 .cel input:hover {
@@ -49,3 +50,12 @@ body {
     background-color: rgb(255, 128, 139) !important;
 }
 
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type=number] {
+    -moz-appearance:textfield;
+}
