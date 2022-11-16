@@ -364,7 +364,7 @@ function initGame(cols, rows) {
     calculatingElement.setAttribute("hidden", true);
     }, 100);
 }
-
+//restart
 function restart() {
   window.location.reload();
 }
